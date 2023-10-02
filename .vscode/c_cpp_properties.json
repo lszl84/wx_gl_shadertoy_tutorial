@@ -6,7 +6,6 @@
               "${workspaceFolder}/src/",
               "${workspaceFolder}/build/_deps/wxwidgets-src/include/",
               "${workspaceFolder}/build/_deps/glew-src/include/",
-              "${workspaceFolder}/build/_deps/glm-src/",
               "${workspaceFolder}/build/_deps/wxwidgets-build/lib/wx/include/osx_cocoa-unicode-static-3.3/"
           ],
           "defines": [
@@ -25,7 +24,6 @@
           "includePath": [
               "${workspaceFolder}/src/",
               "${workspaceFolder}/build/_deps/glew-src/include/",
-              "${workspaceFolder}/build/_deps/glm-src/",
               "${workspaceFolder}/build/_deps/wxwidgets-src/include/"
           ],
           "defines": [
@@ -44,13 +42,12 @@
             "${workspaceFolder}/src/",
             "${workspaceFolder}/build/_deps/wxwidgets-src/include/",
             "${workspaceFolder}/build/_deps/glew-src/include/",
-            "${workspaceFolder}/build/_deps/glm-src/",
             "${workspaceFolder}/build/_deps/wxwidgets-build/lib/wx/include/gtk3-unicode-static-3.3/"
         ],
         "defines": [
             "__WXGTK__"
         ],
-        "compilerPath": "g++",
+        "compilerPath": "/usr/bin/g++",
         "cStandard": "c11",
         "cppStandard": "c++17",
         "intelliSenseMode": "gcc-x64"
