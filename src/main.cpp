@@ -7,6 +7,8 @@
 
 #include "openglcanvas.h"
 
+constexpr size_t IndentWidth = 4;
+
 class MyApp : public wxApp
 {
 public:
@@ -25,6 +27,7 @@ private:
     wxTextCtrl *logTextCtrl{nullptr};
 
     void OnTextChange(wxStyledTextEvent &event);
+    void OnCharAdded(wxStyledTextEvent &event);
     void OnOpenGLInitialized(wxCommandEvent &event);
 
     void BuildShaderProgram();
@@ -113,12 +116,53 @@ MyFrame::MyFrame(const wxString &title)
         this->SetMinSize(FromDIP(wxSize(800, 400)));
 
         this->Bind(wxEVT_STC_CHANGE, &MyFrame::OnTextChange, this);
+        this->Bind(wxEVT_STC_CHARADDED, &MyFrame::OnCharAdded, this);
         this->Bind(wxEVT_SIZE, &MyFrame::OnSize, this);
+    }
+}
+
+void MyFrame::OnCharAdded(wxStyledTextEvent &event)
+{
+    auto newLine = (textCtrl->GetEOLMode() == wxSTC_EOL_CR) ? 13 : 10;
+
+    // copy the leading whitespace from the previous line to preserve indentation
+    if (event.GetKey() == newLine)
+    {
+        auto currentLine = textCtrl->LineFromPosition(textCtrl->GetCurrentPos());
+
+        if (currentLine > 0)
+        {
+            auto previousLine = textCtrl->GetLine(currentLine - 1);
+            size_t characterCountToCopy{0};
+            for (const auto &character : previousLine)
+            {
+                if (character == ' ' || character == '\t')
+                {
+                    ++characterCountToCopy;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            textCtrl->AddText(previousLine.Left(characterCountToCopy));
+        }
+    }
+
+    // when adding a single closing brace, reduce indentation by one level
+    auto nonWhitespaceCharsInLine = textCtrl->GetLine(textCtrl->GetCurrentLine()).Trim(false).Trim(true).length();
+
+    if (event.GetKey() == '}' && nonWhitespaceCharsInLine == 1)
+    {
+        auto currentIndent = textCtrl->GetLineIndentation(textCtrl->GetCurrentLine());
+        textCtrl->SetLineIndentation(textCtrl->GetCurrentLine(), currentIndent - IndentWidth);
     }
 }
 
 void MyFrame::OnTextChange(wxStyledTextEvent &event)
 {
+
     BuildShaderProgram();
 }
 
@@ -154,15 +198,16 @@ wxFont GetMonospacedFont(wxFontInfo &&fontInfo)
 
 void MyFrame::StylizeTextCtrl()
 {
+    textCtrl->StyleClearAll();
+
+    textCtrl->SetTabWidth(IndentWidth);
+
     textCtrl->SetMarginWidth(0, FromDIP(50));
-    textCtrl->StyleSetForeground(wxSTC_STYLE_LINENUMBER, wxColour(75, 75, 75));
-    textCtrl->StyleSetBackground(wxSTC_STYLE_LINENUMBER, wxColour(220, 220, 220));
     textCtrl->SetMarginType(0, wxSTC_MARGIN_NUMBER);
 
     textCtrl->SetWrapMode(wxSTC_WRAP_WORD);
 
     textCtrl->SetText(InitialShaderText);
-    textCtrl->StyleClearAll();
 
     wxFont fixedFont = GetMonospacedFont(wxFontInfo(13));
 
