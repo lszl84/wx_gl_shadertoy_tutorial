@@ -1,0 +1,3 @@
+BasedOnStyle: WebKit
+NamespaceIndentation: All
+IndentWidth: 4

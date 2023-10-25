@@ -1,11 +1,13 @@
 #pragma once
 
-#include <optional>
-#include <string>
-#include <sstream>
+#include <GL/glew.h>
 
-struct ShaderProgram
-{
+#include <optional>
+#include <sstream>
+#include <string>
+
+struct ShaderProgram {
+
     void Build()
     {
         lastBuildLog = {};
@@ -24,8 +26,7 @@ struct ShaderProgram
 
         glGetProgramiv(shaderProgram.value(), GL_LINK_STATUS, &success);
 
-        if (!success)
-        {
+        if (!success) {
             char infoLog[512];
             glGetProgramInfoLog(shaderProgram.value(), 512, nullptr, infoLog);
             lastBuildLog << "Shader program linking failed: " << infoLog;
@@ -35,7 +36,8 @@ struct ShaderProgram
         glDeleteShader(fragmentShader);
     }
 
-    unsigned int CompileShader(unsigned int shaderType, const char *shaderSource)
+    unsigned int CompileShader(unsigned int shaderType,
+        const char* shaderSource)
     {
         unsigned int shader = glCreateShader(shaderType);
         glShaderSource(shader, 1, &shaderSource, nullptr);
@@ -44,8 +46,7 @@ struct ShaderProgram
         int success;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-        if (!success)
-        {
+        if (!success) {
             char infoLog[512];
             glGetShaderInfoLog(shader, 512, nullptr, infoLog);
             lastBuildLog << "Shader compilation failed: " << infoLog;

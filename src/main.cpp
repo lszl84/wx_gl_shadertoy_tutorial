@@ -1,39 +1,35 @@
-#include <wx/wx.h>
-
 #include <wx/settings.h>
-#include <wx/stc/stc.h>
-
 #include <wx/splitter.h>
+#include <wx/stc/stc.h>
+#include <wx/wx.h>
 
 #include "openglcanvas.h"
 
 constexpr size_t IndentWidth = 4;
 
-class MyApp : public wxApp
-{
+class MyApp : public wxApp {
 public:
-    MyApp() {}
+    MyApp() { }
     bool OnInit() wxOVERRIDE;
 };
 
-class MyFrame : public wxFrame
-{
+class MyFrame : public wxFrame {
 public:
-    MyFrame(const wxString &title);
+    MyFrame(const wxString& title);
 
 private:
-    OpenGLCanvas *openGLCanvas{nullptr};
-    wxStyledTextCtrl *textCtrl{nullptr};
-    wxTextCtrl *logTextCtrl{nullptr};
+    OpenGLCanvas* openGLCanvas { nullptr };
+    wxStyledTextCtrl* textCtrl { nullptr };
+    wxTextCtrl* logTextCtrl { nullptr };
 
-    void OnTextChange(wxStyledTextEvent &event);
-    void OnCharAdded(wxStyledTextEvent &event);
-    void OnOpenGLInitialized(wxCommandEvent &event);
+    void OnTextChange(wxStyledTextEvent& event);
+    void OnCharAdded(wxStyledTextEvent& event);
+    void OnOpenGLInitialized(wxCommandEvent& event);
 
     void BuildShaderProgram();
     void StylizeTextCtrl();
 
-    void OnSize(wxSizeEvent &event);
+    void OnSize(wxSizeEvent& event);
 };
 
 wxIMPLEMENT_APP(MyApp);
@@ -43,7 +39,7 @@ bool MyApp::OnInit()
     if (!wxApp::OnInit())
         return false;
 
-    MyFrame *frame = new MyFrame("Hello OpenGL");
+    MyFrame* frame = new MyFrame("Hello OpenGL");
     frame->Show(true);
 
     return true;
@@ -76,23 +72,25 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 }
 )";
 
-MyFrame::MyFrame(const wxString &title)
+MyFrame::MyFrame(const wxString& title)
     : wxFrame(nullptr, wxID_ANY, title)
 {
     wxGLAttributes vAttrs;
     vAttrs.PlatformDefaults().Defaults().EndList();
 
-    if (wxGLCanvas::IsDisplaySupported(vAttrs))
-    {
-        wxSplitterWindow *mainSplitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
-        wxSplitterWindow *textSplitter = new wxSplitterWindow(mainSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
+    if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
+        wxSplitterWindow* mainSplitter = new wxSplitterWindow(
+            this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
+        wxSplitterWindow* textSplitter = new wxSplitterWindow(mainSplitter, wxID_ANY, wxDefaultPosition,
+            wxDefaultSize, wxSP_LIVE_UPDATE);
 
         textCtrl = new wxStyledTextCtrl(textSplitter);
         StylizeTextCtrl();
 
         auto logPanel = new wxPanel(textSplitter);
         auto logLabel = new wxStaticText(logPanel, wxID_ANY, "Compilation Errors:");
-        logTextCtrl = new wxTextCtrl(logPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+        logTextCtrl = new wxTextCtrl(logPanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
+            wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 
         auto logSizer = new wxBoxSizer(wxVERTICAL);
         logSizer->Add(logLabel, 0, wxEXPAND | wxALL, FromDIP(5));
@@ -106,7 +104,8 @@ MyFrame::MyFrame(const wxString &title)
 
         openGLCanvas = new OpenGLCanvas(mainSplitter, vAttrs);
 
-        this->Bind(wxEVT_OPENGL_INITIALIZED, &MyFrame::OnOpenGLInitialized, this);
+        this->Bind(wxEVT_OPENGL_INITIALIZED, &MyFrame::OnOpenGLInitialized,
+            this);
 
         mainSplitter->SetSashGravity(0.5);
         mainSplitter->SetMinimumPaneSize(FromDIP(200));
@@ -121,27 +120,22 @@ MyFrame::MyFrame(const wxString &title)
     }
 }
 
-void MyFrame::OnCharAdded(wxStyledTextEvent &event)
+void MyFrame::OnCharAdded(wxStyledTextEvent& event)
 {
     auto newLine = (textCtrl->GetEOLMode() == wxSTC_EOL_CR) ? 13 : 10;
 
-    // copy the leading whitespace from the previous line to preserve indentation
-    if (event.GetKey() == newLine)
-    {
+    // copy the leading whitespace from the previous line to preserve
+    // indentation
+    if (event.GetKey() == newLine) {
         auto currentLine = textCtrl->LineFromPosition(textCtrl->GetCurrentPos());
 
-        if (currentLine > 0)
-        {
+        if (currentLine > 0) {
             auto previousLine = textCtrl->GetLine(currentLine - 1);
-            size_t characterCountToCopy{0};
-            for (const auto &character : previousLine)
-            {
-                if (character == ' ' || character == '\t')
-                {
+            size_t characterCountToCopy { 0 };
+            for (const auto& character : previousLine) {
+                if (character == ' ' || character == '\t') {
                     ++characterCountToCopy;
-                }
-                else
-                {
+                } else {
                     break;
                 }
             }
@@ -151,43 +145,45 @@ void MyFrame::OnCharAdded(wxStyledTextEvent &event)
     }
 
     // when adding a single closing brace, reduce indentation by one level
-    auto nonWhitespaceCharsInLine = textCtrl->GetLine(textCtrl->GetCurrentLine()).Trim(false).Trim(true).length();
+    auto nonWhitespaceCharsInLine = textCtrl->GetLine(textCtrl->GetCurrentLine())
+                                        .Trim(false)
+                                        .Trim(true)
+                                        .length();
 
-    if (event.GetKey() == '}' && nonWhitespaceCharsInLine == 1)
-    {
+    if (event.GetKey() == '}' && nonWhitespaceCharsInLine == 1) {
         auto currentIndent = textCtrl->GetLineIndentation(textCtrl->GetCurrentLine());
-        textCtrl->SetLineIndentation(textCtrl->GetCurrentLine(), currentIndent - IndentWidth);
+        textCtrl->SetLineIndentation(textCtrl->GetCurrentLine(),
+            currentIndent - IndentWidth);
     }
 }
 
-void MyFrame::OnTextChange(wxStyledTextEvent &event)
+void MyFrame::OnOpenGLInitialized(wxCommandEvent& event)
 {
-
     BuildShaderProgram();
 }
 
-void MyFrame::OnOpenGLInitialized(wxCommandEvent &event)
+void MyFrame::OnTextChange(wxStyledTextEvent& event)
 {
     BuildShaderProgram();
 }
 
 void MyFrame::BuildShaderProgram()
 {
-    openGLCanvas->CompileCustomFragmentShader(textCtrl->GetText().ToStdString());
+    openGLCanvas->CompileCustomFragmentShader(
+        textCtrl->GetText().ToStdString());
     logTextCtrl->SetValue(openGLCanvas->GetShaderBuildLog());
 }
 
-wxFont GetMonospacedFont(wxFontInfo &&fontInfo)
+wxFont GetMonospacedFont(wxFontInfo&& fontInfo)
 {
-    const wxString preferredFonts[] = {"Menlo", "Consolas", "Monaco", "DejaVu Sans Mono", "Courier New"};
+    const wxString preferredFonts[] = { "Menlo", "Consolas", "Monaco",
+        "DejaVu Sans Mono", "Courier New" };
 
-    for (const wxString &fontName : preferredFonts)
-    {
+    for (const wxString& fontName : preferredFonts) {
         fontInfo.FaceName(fontName);
         wxFont font(fontInfo);
 
-        if (font.IsOk() && font.IsFixedWidth())
-        {
+        if (font.IsOk() && font.IsFixedWidth()) {
             return font;
         }
     }
@@ -209,55 +205,75 @@ void MyFrame::StylizeTextCtrl()
 
     textCtrl->SetText(InitialShaderText);
 
-    wxFont fixedFont = GetMonospacedFont(wxFontInfo(13));
+    wxFont fixedFont = GetMonospacedFont(wxFontInfo(12));
 
-    for (size_t n = 0; n < wxSTC_STYLE_MAX; n++)
-    {
+    for (size_t n = 0; n < wxSTC_STYLE_MAX; n++) {
         textCtrl->StyleSetFont(n, fixedFont);
     }
 
     textCtrl->SetLexer(wxSTC_LEX_CPP);
 
     // Set GLSL keywords
-    wxString glslKeywords = wxT("attribute const uniform varying break continue do for while if else in out inout true false");
+    wxString glslKeywords = wxT("attribute const uniform varying break continue "
+                                "do for while if else in out inout true false");
     textCtrl->SetKeyWords(0, glslKeywords);
 
     textCtrl->StyleSetBold(wxSTC_C_WORD, true);
 
-    if (wxSystemSettings::GetAppearance().IsDark())
-    {
-        textCtrl->StyleSetForeground(wxSTC_C_PREPROCESSOR, wxColour(168, 70, 20));  // Preprocessor directive color
-        textCtrl->StyleSetForeground(wxSTC_C_STRING, wxColour(163, 61, 61));        // String color
-        textCtrl->StyleSetForeground(wxSTC_C_CHARACTER, wxColour(163, 21, 21));     // Char color
-        textCtrl->StyleSetForeground(wxSTC_C_COMMENT, wxColour(150, 150, 150));     // Comment color
-        textCtrl->StyleSetForeground(wxSTC_C_COMMENTLINE, wxColour(150, 150, 150)); // Comment line color
-        textCtrl->StyleSetForeground(wxSTC_C_WORD, wxColour(255, 102, 0));          // Keyword color
-        textCtrl->StyleSetForeground(wxSTC_C_IDENTIFIER, wxColour(220, 220, 220));  // Identifier color
-        textCtrl->StyleSetForeground(wxSTC_C_NUMBER, wxColour(183, 101, 81));       // Number color
-        textCtrl->StyleSetForeground(wxSTC_C_OPERATOR, wxColour(200, 200, 200));    // Operator color
-        textCtrl->StyleSetForeground(wxSTC_C_DEFAULT, wxColour(220, 220, 220));     // Default color for other tokens
-    }
-    else
-    {
-        textCtrl->StyleSetForeground(wxSTC_C_PREPROCESSOR, wxColour(168, 70, 20));  // Preprocessor directive color
-        textCtrl->StyleSetForeground(wxSTC_C_STRING, wxColour(163, 21, 21));        // String color
-        textCtrl->StyleSetForeground(wxSTC_C_CHARACTER, wxColour(163, 21, 21));     // Char color
-        textCtrl->StyleSetForeground(wxSTC_C_COMMENT, wxColour(100, 100, 100));     // Comment color
-        textCtrl->StyleSetForeground(wxSTC_C_COMMENTLINE, wxColour(100, 100, 100)); // Comment line color
-        textCtrl->StyleSetForeground(wxSTC_C_WORD, wxColour(255, 102, 0));          // Keyword color
-        textCtrl->StyleSetForeground(wxSTC_C_IDENTIFIER, wxColour(0, 0, 0));        // Identifier color
-        textCtrl->StyleSetForeground(wxSTC_C_NUMBER, wxColour(163, 21, 21));        // Number color
-        textCtrl->StyleSetForeground(wxSTC_C_OPERATOR, wxColour(0, 0, 0));          // Operator color
-        textCtrl->StyleSetForeground(wxSTC_C_DEFAULT, wxColour(0, 0, 0));           // Default color for other tokens
+    if (wxSystemSettings::GetAppearance().IsDark()) {
+        textCtrl->StyleSetForeground(
+            wxSTC_C_PREPROCESSOR,
+            wxColour(168, 70, 20)); // Preprocessor directive color
+        textCtrl->StyleSetForeground(wxSTC_C_STRING,
+            wxColour(163, 61, 61)); // String color
+        textCtrl->StyleSetForeground(wxSTC_C_CHARACTER,
+            wxColour(163, 21, 21)); // Char color
+        textCtrl->StyleSetForeground(wxSTC_C_COMMENT,
+            wxColour(150, 150, 150)); // Comment color
+        textCtrl->StyleSetForeground(
+            wxSTC_C_COMMENTLINE, wxColour(150, 150, 150)); // Comment line color
+        textCtrl->StyleSetForeground(wxSTC_C_WORD,
+            wxColour(255, 102, 0)); // Keyword color
+        textCtrl->StyleSetForeground(
+            wxSTC_C_IDENTIFIER, wxColour(220, 220, 220)); // Identifier color
+        textCtrl->StyleSetForeground(wxSTC_C_NUMBER,
+            wxColour(183, 101, 81)); // Number color
+        textCtrl->StyleSetForeground(wxSTC_C_OPERATOR,
+            wxColour(200, 200, 200)); // Operator color
+        textCtrl->StyleSetForeground(
+            wxSTC_C_DEFAULT,
+            wxColour(220, 220, 220)); // Default color for other tokens
+    } else {
+        textCtrl->StyleSetForeground(
+            wxSTC_C_PREPROCESSOR,
+            wxColour(168, 70, 20)); // Preprocessor directive color
+        textCtrl->StyleSetForeground(wxSTC_C_STRING,
+            wxColour(163, 21, 21)); // String color
+        textCtrl->StyleSetForeground(wxSTC_C_CHARACTER,
+            wxColour(163, 21, 21)); // Char color
+        textCtrl->StyleSetForeground(wxSTC_C_COMMENT,
+            wxColour(100, 100, 100)); // Comment color
+        textCtrl->StyleSetForeground(
+            wxSTC_C_COMMENTLINE, wxColour(100, 100, 100)); // Comment line color
+        textCtrl->StyleSetForeground(wxSTC_C_WORD,
+            wxColour(255, 102, 0)); // Keyword color
+        textCtrl->StyleSetForeground(wxSTC_C_IDENTIFIER,
+            wxColour(0, 0, 0)); // Identifier color
+        textCtrl->StyleSetForeground(wxSTC_C_NUMBER,
+            wxColour(163, 21, 21)); // Number color
+        textCtrl->StyleSetForeground(wxSTC_C_OPERATOR,
+            wxColour(0, 0, 0)); // Operator color
+        textCtrl->StyleSetForeground(
+            wxSTC_C_DEFAULT,
+            wxColour(0, 0, 0)); // Default color for other tokens
     }
 }
 
-void MyFrame::OnSize(wxSizeEvent &event)
+void MyFrame::OnSize(wxSizeEvent& event)
 {
     // a workaround for the OpenGLCanvas not getting the initial size event
     // if contained in wxSplitterWindow
-    if (!openGLCanvas->IsOpenGLInitialized() && openGLCanvas->IsShownOnScreen())
-    {
+    if (!openGLCanvas->IsOpenGLInitialized() && openGLCanvas->IsShownOnScreen()) {
         openGLCanvas->InitializeOpenGL();
 
         // we just need one shot for this workaround, so unbind
