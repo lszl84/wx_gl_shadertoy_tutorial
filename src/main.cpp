@@ -205,7 +205,7 @@ void MyFrame::StylizeTextCtrl()
 
     textCtrl->SetText(InitialShaderText);
 
-    wxFont fixedFont = GetMonospacedFont(wxFontInfo(12));
+    wxFont fixedFont = GetMonospacedFont(wxFontInfo(14));
 
     for (size_t n = 0; n < wxSTC_STYLE_MAX; n++) {
         textCtrl->StyleSetFont(n, fixedFont);
