@@ -1,10 +1,10 @@
-# wx_gl_shadertoy_tutorial
-
 A [ShaderToy](https://www.shadertoy.com/) clone... but on Desktop!
 
-![App Window on Linux](/shadertoy.png)
+[![Video](/output.gif)](https://www.youtube.com/watch?v=wxM9nkAQLHE)
 
 This simple app automatically compiles your GLSL fragment shader code and displays the result on the screen. Built with wxWidgets, the app works on Windows, Mac, and Linux.
+
+Full tutorial: [https://www.youtube.com/watch?v=wxM9nkAQLHE](https://www.youtube.com/watch?v=wxM9nkAQLHE)
 
 ## How this works
 
@@ -38,6 +38,6 @@ cmake --build build -j
 This will create a directory named `build` and create all build artifacts there. The main executable can be found directly in the `build/` folder.
 
 ---
-Check out the blog for more! [www.justdevtutorials.com](https://www.justdevtutorials.com)
+Check out the blog for more! [www.lukesdevtutorials.com](https://www.lukesdevtutorials.com)
 ---
 
