@@ -38,6 +38,6 @@ cmake --build build -j
 This will create a directory named `build` and create all build artifacts there. The main executable can be found directly in the `build/` folder.
 
 ---
-Check out the blog for more! [www.lukesdevtutorials.com](https://www.lukesdevtutorials.com)
+Check out the blog for more! [www.onlyfastcode.com](https://www.onlyfastcode.com)
 ---
 
