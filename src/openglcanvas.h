@@ -6,6 +6,7 @@
 
 #include <chrono>
 
+#include "channel.h"
 #include "shaderprogram.h"
 
 wxDECLARE_EVENT(wxEVT_OPENGL_INITIALIZED, wxCommandEvent);
@@ -30,6 +31,9 @@ public:
     {
         return shaderProgram.lastBuildLog.str();
     }
+    Channel channel[4] {}; // Channels for shader inputs
+    void updateChannels();
+    void updateChannel(int channelIndex);
 
 private:
     bool InitializeOpenGLFunctions();
@@ -42,4 +46,6 @@ private:
     wxTimer timer;
     std::chrono::high_resolution_clock::time_point openGLInitializationTime {};
     float elapsedSeconds { 0.0f };
+    float deltaTime { 0.0f };
+    int frameCount { 0 };
 };
