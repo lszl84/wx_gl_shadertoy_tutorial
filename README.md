@@ -47,3 +47,4 @@ This will create a directory named `build` and create all build artifacts there.
 Check out the blog for more! [www.onlyfastcode.com](https://www.onlyfastcode.com)
 ---
 
+📚 More C++ and wxWidgets tutorials: [devmindscape.com](https://devmindscape.com) · 💼 Available for contract work: [devmindscape.com/work](https://devmindscape.com/work/)
